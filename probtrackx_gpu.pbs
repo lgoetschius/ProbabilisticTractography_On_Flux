@@ -1,0 +1,58 @@
+#!/bin/bash
+####  PBS preamble
+#PBS -N probtrackx
+
+#PBS -M lcgayle@umich.edu
+#PBS -m a
+
+###  The -t PBS option creates a array, so if you have a 5-element array
+###  5 jobs will start.  For each job, a variable called PBS_ARRAYID is
+###  created that contains the number (index) of the array that is running.
+###  That can be used to change what each array job does.  See below for
+###  how we use it to pull the Nth subject out of a file.
+###  
+###  1-N sets the array to go from 1 to N, so there will be N jobs
+###  For this script, N = number of subjects listed in reg_test.txt
+###  which is the number of lines in it (wc -l reg_test.txt)
+###
+###  The %M says that it should only run M jobs at one time
+#PBS -t 1-172%2
+
+#PBS -A lsa_fluxg
+#PBS -q fluxg
+
+#PBS -l nodes=1:ppn=1:gpus=1,pmem=8gb,walltime=2:00:00
+
+#PBS -j oe
+#PBS -V
+
+####  End PBS preamble
+
+# You may wish to note in comments here whether any software modules
+# should be loaded prior to submitting this script, as a reminder to
+# yourself and anyone else who may inherit this script.
+
+#  This script requires cuda/6.5 and fsl/5.0.9
+#  list modules actually loaded when the script runs
+module --ignore_cache load cuda/6.5 fsl
+module list
+
+if [ -s "$PBS_NODEFILE" ] ; then
+    echo "Running on"
+    uniq -c $PBS_NODEFILE
+fi
+
+if [ -d "$PBS_O_WORKDIR" ] ; then
+    cd $PBS_O_WORKDIR
+fi
+
+echo "Running from $PBS_O_WORKDIR"
+
+# Get the subject ID from the list of subjects for processing
+# NOTE:  For future maintainers; you can keep the job array indexing the
+#        same, and just remove fom the reg_test.txt file subect IDs that
+#        have already been processed.
+subject=$(head -$PBS_ARRAYID full_subject_list.txt | tail -1)
+
+# Run the analysis script for that subject
+./probtrackx_gpu.sh $subject
