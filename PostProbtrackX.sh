@@ -41,12 +41,6 @@ for subject in ${subjectlist} ; do
 	# version above.
 	echo "${subject}" >> ${subject_dir}/${version}.txt
 	
-	# Transform back to Standard Space
-	# flirt -in ${subject_dir}/${subject}.bedpostX_gpu/${seed}/${targetfile}.nii.gz \
-	# -applyxfm -init ${subject_dir}/${subject}.bedpostX_gpu/xfms/diff2standard.mat \
-	# -out ${subject_dir}/${subject}.bedpostX_gpu/${seed}/${targetfile}.nii.gz \
-	# -paddingsize 0.0 -interp trilinear -ref $FSLDIR/data/standard/avg152T1_brain.nii.gz
-	
 	# Divide the standard_seeds_to_TARGET image by the waytotal.
 	 fslmaths ${subject_dir}/${subject}/${seed}/${targetfile}.nii.gz \
 	 -div 5000 ${subject_dir}/${subject}/${seed}/${targetfile}_waytotal
